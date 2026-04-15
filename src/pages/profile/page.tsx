@@ -1,6 +1,7 @@
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Button } from "../../components/ui/button";
+import { Download } from "lucide-react"; // If you're using Lucide icons
 import { LogOut, User, Mail, ShieldCheck, LogIn } from "lucide-react";
 import {
   useClerk,
@@ -38,7 +39,8 @@ export default function ProfilePage() {
 
   return (
     // min-h-[calc(100vh-64px)] accounts for your BottomNav height
-    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center verflow-y-auto p-4 py-20">
+      {/* // <div className="flex flex-col min-h-screen bg-background overflow-y-auto pb-10"> */}
       <div className="w-full max-w-md space-y-6">
         <h1 className="text-3xl font-bold text-center">Profile Settings</h1>
 
@@ -63,7 +65,7 @@ export default function ProfilePage() {
               <span className="text-muted-foreground flex items-center gap-2">
                 <Mail className="w-4 h-4" /> Email
               </span>
-              <span className="font-medium truncate max-w-[150px]">
+              <span className="font-medium truncate max-w-37.5">
                 {convexUser?.email === "unset"
                   ? "Syncing..."
                   : convexUser?.email || "N/A"}
@@ -114,6 +116,27 @@ export default function ProfilePage() {
           </SignedOut>
         </div>
 
+        {/* Android App Download*/}
+        <div className="w-full max-w-md p-4 bg-secondary/10 rounded-xl border border-secondary/20 shadow-sm">
+          <h3 className="text-lg font-semibold mb-2 text-primary">
+            Get the App
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Share CircuitIQ with your colleagues or install it on another
+            device.
+          </p>
+
+          <a
+            href="/CircuitIQ.apk"
+            download="CircuitIQ.apk"
+            className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 transition-all active:scale-95 shadow-md"
+          >
+            <Download size={20} />
+            Download Android APK
+          </a>
+        </div>
+
+        {/* Support Contact Info */}
         <p className="text-[12px] text-center text-muted-foreground px-6">
           Have you got any questions or feel that something isn't working right?
           please reach out to us at{" "}
