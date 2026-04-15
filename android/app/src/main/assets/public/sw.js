@@ -1,1 +1,95 @@
-if(!self.define){let e,s={};const i=(i,n)=>(i=new URL(i+".js",n).href,s[i]||new Promise(s=>{if("document"in self){const e=document.createElement("script");e.src=i,e.onload=s,document.head.appendChild(e)}else e=i,importScripts(i),s()}).then(()=>{let e=s[i];if(!e)throw new Error(`Module ${i} didn’t register its module`);return e}));self.define=(n,r)=>{const l=e||("document"in self?document.currentScript.src:"")||location.href;if(s[l])return;let t={};const o=e=>i(e,l),c={module:{uri:l},exports:t,require:o};s[l]=Promise.all(n.map(e=>c[e]||o(e))).then(e=>(r(...e),t))}}define(["./workbox-8c29f6e4"],function(e){"use strict";self.skipWaiting(),e.clientsClaim(),e.precacheAndRoute([{url:"index.html",revision:"2a8f3a81e456b2c8971530704283253c"},{url:"registerSW.js",revision:"402b66900e731ca748771b6fc5e7a068"},{url:"assets/index-BvuTZrwK.css",revision:null},{url:"assets/index-DsKqegS4.js",revision:null},{url:"assets/polyfills-legacy-ygzpF0Lr.js",revision:null},{url:"assets/index-legacy-N3FocCd-.js",revision:null},{url:"manifest.webmanifest",revision:"7b35fbb0b880ec9ad7199f18dfc91cf0"}],{}),e.cleanupOutdatedCaches(),e.registerRoute(new e.NavigationRoute(e.createHandlerBoundToURL("index.html")))});
+const CACHE_NAME = "circuitiq-v1";
+const urlsToCache = ["/", "/icon/icon-192.png", "/icon/icon-512.png"];
+
+// Install event - cache core assets
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(urlsToCache))
+      .then(() => self.skipWaiting()),
+  );
+});
+
+// Fetch event - network first, fall back to cache
+self.addEventListener("fetch", (event) => {
+  // Only handle GET requests - POST/PUT/DELETE cannot be cached
+  if (event.request.method !== "GET") {
+    return;
+  }
+
+  // Handle navigation requests differently
+  if (event.request.mode === "navigate") {
+    event.respondWith(fetch(event.request).catch(() => caches.match("/")));
+    return;
+  }
+
+  // Network-first for other GET requests
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        // Only cache successful responses (status 200-299)
+        if (!response.ok) {
+          return response;
+        }
+        const responseToCache = response.clone();
+        caches
+          .open(CACHE_NAME)
+          .then((cache) => cache.put(event.request, responseToCache));
+        return response;
+      })
+      .catch(() => caches.match(event.request)),
+  );
+});
+
+// Activate event - clean up old caches
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches
+      .keys()
+      .then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (cacheName !== CACHE_NAME) {
+              return caches.delete(cacheName);
+            }
+          }),
+        );
+      })
+      .then(() => self.clients.claim()),
+  );
+});
+
+// Handle push notifications - only show if app is not in focus
+self.addEventListener("push", (event) => {
+  const data = event.data?.json() ?? {};
+
+  event.waitUntil(
+    clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clientList) => {
+        const isAppInFocus = clientList.some((client) => client.focused);
+
+        // Only show notification if app is not in focus
+        if (!isAppInFocus) {
+          return self.registration.showNotification(data.title, data.options);
+        }
+      }),
+  );
+});
+
+// Handle notification clicks - opens/focuses the app
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  event.waitUntil(
+    clients.matchAll({ type: "window" }).then((clientList) => {
+      // Focus existing window if found
+      for (const client of clientList) {
+        if ("focus" in client) return client.focus();
+      }
+      // Open new window if none exists
+      if (clients.openWindow) return clients.openWindow("/");
+    }),
+  );
+});
