@@ -9,8 +9,13 @@ export default defineConfig({
     react(),
     tailwindcss(),
     legacy({
-      targets: ['defaults', 'not IE 11']
-  }),],
+      targets: ["defaults", "not IE 11"],
+    }),
+  ],
+  build: {
+    minify: "esbuild",
+    chunkSizeWarningLimit: 1000,
+  },
   resolve: {
     tsconfigPaths: true,
   },
