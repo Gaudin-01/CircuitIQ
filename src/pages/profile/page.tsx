@@ -1,7 +1,7 @@
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Button } from "../../components/ui/button";
-// import { Download } from "lucide-react"; // If you're using Lucide icons
+import { Download } from "lucide-react"; // If you're using Lucide icons
 import { LogOut, User, Mail, ShieldCheck, LogIn } from "lucide-react";
 import {
   useClerk,
@@ -117,7 +117,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Android App Download*/}
-        {/* <div className="w-full max-w-md p-4 bg-secondary/10 rounded-xl border border-secondary/20 shadow-sm">
+        <div className="w-full max-w-md p-4 bg-secondary/10 rounded-xl border border-secondary/20 shadow-sm">
           <h3 className="text-lg font-semibold mb-2 text-primary">
             Get the App
           </h3>
@@ -134,7 +134,7 @@ export default function ProfilePage() {
             <Download size={20} />
             Download Android APK
           </a>
-        </div> */}
+        </div>
 
         {/* Support Contact Info */}
         <p className="text-[12px] text-center text-muted-foreground px-6">
