@@ -10,7 +10,9 @@ import ManageQuestionsPage from "./pages/manage-questions/page.tsx";
 import WhatsAppButton from "./components/WhatsAppButton";
 
 import { Toaster } from "sonner";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react"; // Added this import
+import { App as CapApp } from "@capacitor/app";
+import { HashRouter, Routes, Route, useNavigate } from "react-router-dom";
 
 // CLERK & CONVEX INTEGRATION
 import { ClerkProvider, useAuth } from "@clerk/clerk-react";
@@ -26,6 +28,26 @@ if (!PUBLISHABLE_KEY) {
   console.error("Missing Clerk Publishable Key! Check your .env.local file.");
 }
 
+// 1. New component to handle Android deep links
+function DeepLinkHandler() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    CapApp.addListener("appUrlOpen", (event) => {
+      // Example event.url: "com.circuitiq.app:///auth/callback?token=..."
+      const url = new URL(event.url);
+      
+      // For HashRouter, we need to extract the path correctly
+      const path = url.pathname + url.search;
+      
+      // Redirect inside the app
+      navigate(path);
+    });
+  }, [navigate]);
+
+  return null; // This component doesn't render anything
+}
+
 export default function App() {
   // useServiceWorker();
 
@@ -35,6 +57,8 @@ export default function App() {
         {/* You must wrap the children here for the useEffect to run */}
         <UserSessionWrapper>
           <HashRouter>
+            <DeepLinkHandler /> {/* Handle deep links on Android */}
+            
             <Toaster position="top-center" richColors />
             <Routes>
               <Route path="/" element={<Index />} />
@@ -61,7 +85,6 @@ export default function App() {
 import { useConvexAuth } from "convex/react";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
-import { useEffect } from "react";
 
 function UserSessionWrapper({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useConvexAuth();
