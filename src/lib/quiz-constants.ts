@@ -2,11 +2,13 @@ import type { LucideIcon } from "lucide-react";
 import {
   Cpu,
   Zap,
+  Atom,
+  Binary,
+  Layers,
   Globe,
-  Lightbulb,
-  Cog,
-  ToggleRight,
   Shuffle,
+  SlidersHorizontal,
+  // Network,
 } from "lucide-react";
 
 export type CategoryDef = {
@@ -26,13 +28,13 @@ export const CATEGORIES: CategoryDef[] = [
   {
     id: "Digital Electronics",
     name: "Digital Electronics",
-    icon: ToggleRight,
+    icon: Binary,
     gradient: "from-blue-500 to-cyan-500",
   },
   {
     id: "Computer Architecture",
     name: "Computer Architecture",
-    icon: Cpu,
+    icon: Layers,
     gradient: "from-purple-500 to-pink-500",
   },
   {
@@ -44,13 +46,13 @@ export const CATEGORIES: CategoryDef[] = [
   {
     id: "Semiconductor Devices",
     name: "Semiconductor Devices",
-    icon: Lightbulb,
+    icon: Atom,
     gradient: "from-green-500 to-emerald-500",
   },
   {
     id: "Microprocessors",
     name: "Microprocessors",
-    icon: Cog,
+    icon: Cpu,
     gradient: "from-red-500 to-rose-500",
   },
   {
@@ -58,6 +60,14 @@ export const CATEGORIES: CategoryDef[] = [
     name: "Computer Networking",
     icon: Globe,
     gradient: "from-teal-500 to-cyan-500",
+   // icon: Network,
+
+  },
+  {
+    id: "Control Systems",
+    name: "Control Systems",
+    icon: SlidersHorizontal,
+    gradient: "from-rose-500 to-red-600",
   },
 ];
 
