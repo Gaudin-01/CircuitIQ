@@ -1,4 +1,4 @@
-import { ConvexError } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 export const updateCurrentUser = mutation({
@@ -17,9 +17,7 @@ export const updateCurrentUser = mutation({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", identity.tokenIdentifier),
-      )
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
       .unique();
 
     if (user !== null) {
@@ -30,9 +28,9 @@ export const updateCurrentUser = mutation({
         user.role !== identity.role
       ) {
         await ctx.db.patch(user._id, {
-          name: identity.name,
-          email: identity.email,
-          role: role,
+          name: identity.name ?? "Anonymous",
+          email: identity.email ?? "No Email",
+          picture: identity.pictureUrl ?? "", // Your schema requires picture
         });
       }
       return user._id;
@@ -42,11 +40,32 @@ export const updateCurrentUser = mutation({
     return await ctx.db.insert("users", {
       name: identity.name ?? "Anonymous",
       email: identity.email ?? "No Email",
-      tokenIdentifier: identity.tokenIdentifier,
+      clerkId: identity.subject, // Use clerkId, not tokenIdentifier
+      picture: identity.pictureUrl ?? "", // Your schema requires picture
       role: role ?? "student", // Default to 'student' if role is missing
     });
   },
 });
+
+// convex/users.ts
+// export const setUsername = mutation({
+//   args: { username: v.string() },
+//   handler: async (ctx, args) => {
+//     const identity = await ctx.auth.getUserIdentity();
+//     if (!identity) throw new Error("Not authenticated");
+
+//     const user = await ctx.db
+//       .query("users")
+//       .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+//       .unique();
+
+//     if (user) {
+//       await ctx.db.patch(user._id, {
+//         username: args.username.toLowerCase().trim()
+//       });
+//     }
+//   },
+// });
 
 export const getCurrentUser = query({
   args: {},
@@ -59,10 +78,38 @@ export const getCurrentUser = query({
 
     return await ctx.db
       .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", identity.tokenIdentifier),
-      )
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
       .unique();
+  },
+});
+
+export const setUsername = mutation({
+  args: { username: v.string() },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user) throw new Error("User not found in database");
+
+    await ctx.db.patch(user._id, {
+      username: args.username.toLowerCase().trim(),
+    });
+  },
+});
+
+export const checkUsername = query({
+  args: { username: v.string() },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("users")
+      .withIndex("by_username", (q) => q.eq("username", args.username.toLowerCase()))
+      .unique();
+    return !!existing; // returns true if taken, false if free
   },
 });
 

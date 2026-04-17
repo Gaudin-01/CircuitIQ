@@ -40,7 +40,6 @@ export default function ProfilePage() {
   return (
     // min-h-[calc(100vh-64px)] accounts for your BottomNav height
     <div className="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center verflow-y-auto p-4 py-20">
-      {/* // <div className="flex flex-col min-h-screen bg-background overflow-y-auto pb-10"> */}
       <div className="w-full max-w-md space-y-6">
         <h1 className="text-3xl font-bold text-center">Profile Settings</h1>
 
@@ -51,6 +50,16 @@ export default function ProfilePage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="flex items-center justify-between border-b pb-2">
+              <span className="text-muted-foreground flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4" /> Username
+              </span>
+              <span className="font-medium text-blue-600">
+                {convexUser?.username === "unset"
+                  ? "Syncing..."
+                  : convexUser?.username || "Anonymous"}
+              </span>
+            </div>
             <div className="flex items-center justify-between border-b pb-2">
               <span className="text-muted-foreground flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4" /> Name
@@ -138,7 +147,7 @@ export default function ProfilePage() {
 
         {/* Support Contact Info */}
         <p className="text-[12px] text-center text-muted-foreground px-6">
-          Have you got any questions or feel that something isn't working right?
+          Found any bug? Have you got any questions or feel that something isn't working right?
           please reach out to us at{" "}
           <a href={whatsappUrl} className="text-blue-600 hover:underline">
             support@circuitiq.com
