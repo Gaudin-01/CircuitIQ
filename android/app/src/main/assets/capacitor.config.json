@@ -3,6 +3,7 @@
 	"appName": "CircuitIQ",
 	"webDir": "dist",
 	"server": {
-		"androidScheme": "https"
+		"url": "https://circuitiq-ecru.vercel.app",
+		"cleartext": true
 	}
 }

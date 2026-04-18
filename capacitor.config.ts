@@ -4,8 +4,12 @@ const config: CapacitorConfig = {
   appId: "com.circuitiq.app",
   appName: "CircuitIQ",
   webDir: "dist",
+  // server: {
+  //   androidScheme: "https"
+  // },
   server: {
-    androidScheme: "https"
+    url: "https://circuitiq-ecru.vercel.app",
+    cleartext: true,
   },
 };
 
