@@ -164,12 +164,12 @@ function DynamicDownloadButton() {
 
   useEffect(() => {
     // IMPORTANT: Replace YOUR_GITHUB_NAME and YOUR_REPO_NAME below!
-    fetch(
-      "https://api.github.com/repos/YOUR_GITHUB_NAME/YOUR_REPO_NAME/releases/latest",
-    )
+    fetch("https://api.github.com/repos/Gaudin-01/CircuitIQ/releases/latest")
       .then((res) => res.json())
       .then(
-        (data: { assets?: { name: string; browser_download_url: string }[] }) => {
+        (data: {
+          assets?: { name: string; browser_download_url: string }[];
+        }) => {
           // Find the asset that ends in .apk
           const apkAsset = data.assets?.find((asset) =>
             asset.name.endsWith(".apk"),
