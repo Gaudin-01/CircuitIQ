@@ -19,11 +19,10 @@ import { App as CapacitorApp } from "@capacitor/app";
 import { AdMob } from "@capacitor-community/admob";
 import { Capacitor } from "@capacitor/core";
 
-// AdMob Initialization
+// 1. AdMob Initialization
 function AdMobInitializer() {
   useEffect(() => {
     const initializeAdMob = async () => {
-      // Only initialize if we are actually running on a mobile device
       if (Capacitor.isNativePlatform()) {
         try {
           await AdMob.initialize({});
@@ -38,25 +37,21 @@ function AdMobInitializer() {
   return null;
 }
 
-export default function App() {
+// 2. The Smart Deep Link Listener (Now safely inside the Router!)
+function DeepLinkListener() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Only listen for deep links if we are running natively
     if (Capacitor.isNativePlatform()) {
       CapacitorApp.addListener("appUrlOpen", (event) => {
         const url = new URL(event.url);
-
         // If the OS hands us our custom scheme back from Chrome...
         if (url.protocol === "com.circuitiq.app:") {
-          // Push the exact URL path and auth tokens into our React Router!
-          // Convex will automatically see the code and log the user in.
           navigate(url.pathname + url.search);
         }
       });
     }
 
-    // Cleanup listener when app closes
     return () => {
       if (Capacitor.isNativePlatform()) {
         CapacitorApp.removeAllListeners();
@@ -64,9 +59,16 @@ export default function App() {
     };
   }, [navigate]);
 
+  return null;
+}
+
+// 3. Main App Component
+export default function App() {
   return (
     <UserSessionWrapper>
       <HashRouter>
+        {/* The listener is now safely inside the HashRouter */}
+        <DeepLinkListener />
         <Toaster position="top-center" richColors />
         <Routes>
           <Route path="/" element={<Index />} />
@@ -86,11 +88,11 @@ export default function App() {
   );
 }
 
+// 4. Session Wrapper
 function UserSessionWrapper({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const user = useQuery(api.users.getCurrentUser);
 
-  // Prevent rendering the app until we know the auth state
   if (isLoading || (isAuthenticated && user === undefined)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -101,7 +103,6 @@ function UserSessionWrapper({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Force username selection if they don't have one
   if (isAuthenticated && user && !user.username) {
     return (
       <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-[9999] p-4">
