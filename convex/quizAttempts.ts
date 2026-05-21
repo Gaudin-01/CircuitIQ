@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const submit = mutation({
   args: {
@@ -9,28 +10,20 @@ export const submit = mutation({
     totalQuestions: v.number(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    // 1. Securely grab the native Convex user ID
+    const userId = await getAuthUserId(ctx);
+
+    if (!userId) {
       throw new ConvexError({
         message: "Must be logged in to save progress",
         code: "UNAUTHENTICATED",
       });
     }
 
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
-      .unique();
-
-    if (!user) {
-      throw new ConvexError({
-        message: "User not found",
-        code: "NOT_FOUND",
-      });
-    }
-
+    // 2. We no longer need to search the database for the user!
+    // We can insert the attempt directly using the userId we just received.
     return await ctx.db.insert("quizAttempts", {
-      userId: user._id,
+      userId: userId,
       category: args.category,
       difficulty: args.difficulty,
       score: args.score,
@@ -43,21 +36,17 @@ export const submit = mutation({
 export const getByUser = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    // 1. Securely grab the native Convex user ID
+    const userId = await getAuthUserId(ctx);
+
+    if (!userId) {
       return [];
     }
 
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
-      .unique();
-
-    if (!user) return [];
-
+    // 2. Query attempts directly using the userId
     return await ctx.db
       .query("quizAttempts")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .order("desc")
       .take(50);
   },

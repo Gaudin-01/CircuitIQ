@@ -113,14 +113,8 @@ export default function LeaderboardPage() {
                 <PodiumCard
                   entry={leaderboard[1]}
                   position={2}
-                  // isCurrentUser={leaderboard[1].userId === user?.firstName}
-                  // isCurrentUser={leaderboard[1].name == user?.firstName}
-                  // Find line ~128 in page.tsx and change the isCurrentUser check:
-                  isCurrentUser={
-                    user?.id !== undefined &&
-                    leaderboard[1]?.userId !== undefined &&
-                    leaderboard[1].userId === user.id
-                  }
+                  // We use user._id to check against the Convex database ID
+                  isCurrentUser={user?._id === leaderboard[1].userId}
                   height="h-28"
                   delay={0.3}
                 />
@@ -129,14 +123,7 @@ export default function LeaderboardPage() {
               <PodiumCard
                 entry={leaderboard[0]}
                 position={1}
-                // isCurrentUser={leaderboard[0].name == user?.firstName}
-                // isCurrentUser={leaderboard[0].userId === user?.firstName}
-                // Find line ~128 in page.tsx and change the isCurrentUser check:
-                isCurrentUser={
-                  user?.id !== undefined &&
-                  leaderboard[0]?.userId !== undefined &&
-                  leaderboard[0].userId === user.id
-                }
+                isCurrentUser={user?._id === leaderboard[0].userId}
                 height="h-36"
                 delay={0.2}
               />
@@ -145,14 +132,7 @@ export default function LeaderboardPage() {
                 <PodiumCard
                   entry={leaderboard[2]}
                   position={3}
-                  // isCurrentUser={leaderboard[2].userId === user?.firstName}
-                  // isCurrentUser={leaderboard[2].name == user?.firstName}
-                  // Find line ~128 in page.tsx and change the isCurrentUser check:
-                  isCurrentUser={
-                    user?.id !== undefined &&
-                    leaderboard[2]?.userId !== undefined &&
-                    leaderboard[2].userId === user.id
-                  }
+                  isCurrentUser={user?._id === leaderboard[2].userId}
                   height="h-24"
                   delay={0.4}
                 />
@@ -167,14 +147,7 @@ export default function LeaderboardPage() {
                     key={entry.userId}
                     entry={entry}
                     rank={index + 4}
-                    // isCurrentUser={entry.userId === user?.firstName}
-                    // isCurrentUser={entry.name == user?.firstName}
-                    // Find line ~128 in page.tsx and change the isCurrentUser check:
-                    isCurrentUser={
-                      user?.id !== undefined &&
-                      entry.userId !== undefined &&
-                      entry.userId === user.id
-                    }
+                    isCurrentUser={user?._id === entry.userId}
                     delay={0.4 + index * 0.05}
                   />
                 ))}
@@ -187,7 +160,9 @@ export default function LeaderboardPage() {
   );
 }
 
+// Added userId to the type to prevent TypeScript warnings
 type PodiumEntry = {
+  userId: string;
   name: string;
   avgPercentage: number;
   quizzesTaken: number;

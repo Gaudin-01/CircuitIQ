@@ -5,35 +5,41 @@ import ProfilePage from "./pages/profile/page";
 import BottomNav from "./components/BottomNav";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
-import AuthCallback from "./pages/auth/Callback"; 
 import ManageQuestionsPage from "./pages/manage-questions/page";
 import WhatsAppButton from "./components/WhatsAppButton";
 import UsernameForm from "./components/UsernameForm";
 import Dashboard from "./pages/dashboard/page";
 import { Toaster } from "sonner";
 import { useEffect } from "react";
-import {
-  useQuery,
-  useConvexAuth,
-  useMutation,
-  ConvexReactClient,
-} from "convex/react";
+import { useQuery, useConvexAuth } from "convex/react"; // Removed useMutation
 import { api } from "../convex/_generated/api";
 import { App as CapApp } from "@capacitor/app";
 import { HashRouter, Routes, Route, useNavigate } from "react-router-dom";
 
-// CLERK & CONVEX INTEGRATION
-import { ClerkProvider, useAuth } from "@clerk/clerk-react";
-import { ConvexProviderWithClerk } from "convex/react-clerk";
+import { AdMob } from "@capacitor-community/admob";
+import { Capacitor } from "@capacitor/core";
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-
-if (!PUBLISHABLE_KEY) {
-  console.error("Missing Clerk Publishable Key! Check your .env.local file.");
+// Inside your App.tsx, perhaps right above DeepLinkHandler
+function AdMobInitializer() {
+  useEffect(() => {
+    const initializeAdMob = async () => {
+      // Only initialize if we are actually running on a mobile device
+      if (Capacitor.isNativePlatform()) {
+        try {
+          await AdMob.initialize({});
+          console.log("AdMob initialized successfully");
+        } catch (error) {
+          console.error("AdMob initialization failed", error);
+        }
+      }
+    };
+    initializeAdMob();
+  }, []);
+  return null;
 }
 
-// 1. New component to handle Android deep links
+
+
 function DeepLinkHandler() {
   const navigate = useNavigate();
   useEffect(() => {
@@ -48,48 +54,31 @@ function DeepLinkHandler() {
 
 export default function App() {
   return (
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-      <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-        <UserSessionWrapper>
-          <HashRouter>
-            <DeepLinkHandler />
-            <Toaster position="top-center" richColors />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/quiz" element={<QuizPage />} />
-              <Route path="/progress" element={<ProgressPage />} />
-              <Route path="/leaderboard" element={<LeaderboardPage />} />
-              <Route
-                path="/manage-questions"
-                element={<ManageQuestionsPage />}
-              />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="*" element={<NotFound />} />
-              <Route path="/profile" element={<ProfilePage />} />
-            </Routes>
-            <WhatsAppButton />
-            <BottomNav />
-          </HashRouter>
-        </UserSessionWrapper>
-      </ConvexProviderWithClerk>
-    </ClerkProvider>
+    <UserSessionWrapper>
+      <HashRouter>
+        <DeepLinkHandler />
+        <Toaster position="top-center" richColors />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/quiz" element={<QuizPage />} />
+          <Route path="/progress" element={<ProgressPage />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/manage-questions" element={<ManageQuestionsPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="*" element={<NotFound />} />
+          <Route path="/profile" element={<ProfilePage />} />
+        </Routes>
+        <AdMobInitializer />
+        <WhatsAppButton />
+        <BottomNav />
+      </HashRouter>
+    </UserSessionWrapper>
   );
 }
 
 function UserSessionWrapper({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useConvexAuth();
-  const storeUser = useMutation(api.users.updateCurrentUser);
-const user = useQuery(api.users.getCurrentUser);
-  useEffect(() => {
-    if (isAuthenticated) {
-      // We add a small delay to ensure the Clerk session is fully ready
-      const timeout = setTimeout(() => {
-        storeUser().catch((err) => console.error("Sync failed:", err));
-      }, 1000);
-      return () => clearTimeout(timeout);
-    }
-  }, [isAuthenticated, storeUser]);
+  const user = useQuery(api.users.getCurrentUser);
 
   // Prevent rendering the app until we know the auth state
   if (isLoading || (isAuthenticated && user === undefined)) {
@@ -101,6 +90,8 @@ const user = useQuery(api.users.getCurrentUser);
       </div>
     );
   }
+
+  // Force username selection if they don't have one
   if (isAuthenticated && user && !user.username) {
     return (
       <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-[9999] p-4">

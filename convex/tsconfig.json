@@ -20,7 +20,10 @@
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+
+    // Add this line right here!
+    "types": ["node"]
   },
   "include": ["./**/*"],
   "exclude": ["./_generated"]

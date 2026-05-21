@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as auth from "../auth.js";
+import type * as http from "../http.js";
 import type * as leaderboard from "../leaderboard.js";
 import type * as questions from "../questions.js";
 import type * as quizAttempts from "../quizAttempts.js";
@@ -20,6 +22,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
+  http: typeof http;
   leaderboard: typeof leaderboard;
   questions: typeof questions;
   quizAttempts: typeof quizAttempts;

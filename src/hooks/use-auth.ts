@@ -1,93 +1,31 @@
-import { useClerk, useUser } from "@clerk/clerk-react";
-import { useConvexAuth } from "convex/react";
+import { useConvexAuth, useQuery } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { api } from "../../convex/_generated/api"; // Adjust this path if your file structure requires it
 import { useCallback } from "react";
 
 export function useAuth() {
-  const { openSignIn, signOut } = useClerk();
-  const { user, isLoaded: isUserLoaded } = useUser();
-  const { isAuthenticated: isConvexAuthenticated, isLoading: isConvexLoading } =
-    useConvexAuth();
+  const { isAuthenticated, isLoading: isConvexLoading } = useConvexAuth();
+  const { signIn, signOut } = useAuthActions();
 
-  // If Clerk says we have a user, we treat the app as authenticated
-  // even if Convex is still "thinking" (handshaking).
-  const isAuthenticated = isConvexAuthenticated || !!user;
+  // Fetch the current user directly from your Convex database
+  const user = useQuery(api.users.getCurrentUser);
 
   const signinRedirect = useCallback(async () => {
-    if (isAuthenticated) return; // Guard: Don't open modal if already auth'd
-    return openSignIn({
-      afterSignInUrl: "/auth/callback",
-      afterSignUpUrl: "/auth/callback",
-    });
-  }, [openSignIn, isAuthenticated]);
+    if (isAuthenticated) return;
+    // Trigger the native Convex Google login flow
+    return signIn("google");
+  }, [isAuthenticated, signIn]);
 
   const removeUser = useCallback(async () => {
-    return signOut({ redirectUrl: window.location.origin });
+    return signOut();
   }, [signOut]);
 
   return {
     isAuthenticated,
-    isLoading: isConvexLoading || !isUserLoaded,
+    // Ensure we are loading if Convex is checking state, or if we are auth'd but haven't fetched the user doc yet
+    isLoading: isConvexLoading || (isAuthenticated && user === undefined),
     user,
     signinRedirect,
     removeUser,
   };
 }
-
-// import { useClerk, useUser } from "@clerk/clerk-react";
-// import { useConvexAuth } from "convex/react";
-// import { useCallback } from "react";
-
-// export function useAuth() {
-//   const { openSignIn, signOut } = useClerk();
-//   const { user, isLoaded: isUserLoaded } = useUser(); // Add isLoaded
-//   const { isAuthenticated, isLoading: isConvexLoading } = useConvexAuth();
-
-//   const signinRedirect = useCallback(async () => {
-//     return openSignIn({
-//       afterSignInUrl: "/auth/callback",
-//       afterSignUpUrl: "/auth/callback",
-//     });
-//   }, [openSignIn]);
-
-//   const removeUser = useCallback(async () => {
-//     return signOut();
-//   }, [signOut]);
-
-//   return {
-//     isAuthenticated,
-//     isLoading: isConvexLoading || !isUserLoaded, // Stay in loading state until BOTH are ready
-//     user,
-//     signinRedirect,
-//     removeUser,
-//   };
-// }
-
-// import { useClerk, useUser } from "@clerk/clerk-react";
-// import { useConvexAuth } from "convex/react";
-// import { useCallback } from "react";
-
-// export function useAuth() {
-//   const { openSignIn, signOut } = useClerk();
-//   const { user } = useUser();
-//   const { isAuthenticated, isLoading } = useConvexAuth();
-
-//   const signinRedirect = useCallback(async () => {
-//     // This is the function the button was looking for!
-//     return openSignIn({
-//       afterSignInUrl: "/auth/callback",
-//       afterSignUpUrl: "/auth/callback",
-//     });
-//   }, [openSignIn]);
-
-//   const removeUser = useCallback(async () => {
-//     return signOut();
-//   }, [signOut]);
-
-//   return {
-//     isAuthenticated,
-//     isLoading,
-//     user,
-//     signinRedirect, // Now it is a function
-//     removeUser,
-//   };
-// }

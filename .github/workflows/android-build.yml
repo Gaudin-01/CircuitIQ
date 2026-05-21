@@ -29,18 +29,12 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Build Android APK
-        run: |
-          npx cap sync
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug
-          cd ..
-          mkdir -p dist
-          cp android/app/build/outputs/apk/debug/app-debug.apk dist/CircuitIQ.apk
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+          # Add this to the very end of your existing build.yml file
+      - name: Create Release and Upload APK
+        uses: softprops/action-gh-release@v2
         with:
-          name: CircuitIQ-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          files: android/app/build/outputs/apk/debug/app-debug.apk # Update this path if your build outputs a release APK instead
+          tag_name: v1.0.${{ github.run_number }}
+          name: Release v1.0.${{ github.run_number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
