@@ -13,7 +13,7 @@ import { Toaster } from "sonner";
 import { useEffect } from "react";
 import { useQuery, useConvexAuth } from "convex/react";
 import { api } from "../convex/_generated/api";
-import { HashRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 
 import { App as CapacitorApp } from "@capacitor/app";
 import { AdMob } from "@capacitor-community/admob";
@@ -38,16 +38,18 @@ function AdMobInitializer() {
 }
 
 // 2. The Smart Deep Link Listener (Now safely inside the Router!)
+// 2. The Smart Deep Link Listener
 function DeepLinkListener() {
-  const navigate = useNavigate();
-
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
       CapacitorApp.addListener("appUrlOpen", (event) => {
         const url = new URL(event.url);
+        
         // If the OS hands us our custom scheme back from Chrome...
         if (url.protocol === "com.circuitiq.app:") {
-          navigate(url.pathname + url.search);
+          // Force a hard reload of the WebView to inject the Google auth code.
+          // ConvexAuthProvider will wake up, see the code, and instantly log you in!
+          window.location.href = "/" + url.search;
         }
       });
     }
@@ -57,12 +59,36 @@ function DeepLinkListener() {
         CapacitorApp.removeAllListeners();
       }
     };
-  }, [navigate]);
+  }, []);
 
   return null;
 }
+// function DeepLinkListener() {
+//   const navigate = useNavigate();
+
+//   useEffect(() => {
+//     if (Capacitor.isNativePlatform()) {
+//       CapacitorApp.addListener("appUrlOpen", (event) => {
+//         const url = new URL(event.url);
+//         // If the OS hands us our custom scheme back from Chrome...
+//         if (url.protocol === "com.circuitiq.app:") {
+//           navigate(url.pathname + url.search);
+//         }
+//       });
+//     }
+
+//     return () => {
+//       if (Capacitor.isNativePlatform()) {
+//         CapacitorApp.removeAllListeners();
+//       }
+//     };
+//   }, [navigate]);
+
+//   return null;
+// }
 
 // 3. Main App Component
+
 export default function App() {
   return (
     <UserSessionWrapper>
