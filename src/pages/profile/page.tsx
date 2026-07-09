@@ -35,11 +35,11 @@ export default function ProfilePage() {
       if (Capacitor.isNativePlatform()) {
         try {
           await AdMob.showBanner({
-            adId: "ca-app-pub-3940256099942544/6300978111", // Google Test Banner ID
+            adId: "ca-app-pub-8180341562401513/3263805197", // Google Test Banner ID
             adSize: BannerAdSize.BANNER,
             position: BannerAdPosition.TOP_CENTER,
             margin: 0,
-            isTesting: true, // REMOVE IN PRODUCTION
+            // isTesting: true, // REMOVE IN PRODUCTION
           });
         } catch (err) {
           console.error("AdMob Banner error:", err);

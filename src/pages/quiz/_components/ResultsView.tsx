@@ -44,7 +44,7 @@ export default function ResultsView({
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
       AdMob.prepareInterstitial({
-        adId: "ca-app-pub-3940256099942544/1033173712", // Google Test Interstitial Video ID
+        adId: "ca-app-pub-8180341562401513/8178210202", // Google Test Interstitial Video ID
         isTesting: true, // REMOVE IN PRODUCTION
       }).catch(console.error);
     }
