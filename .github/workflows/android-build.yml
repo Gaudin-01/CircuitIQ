@@ -40,7 +40,7 @@ jobs:
           npx cap sync
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleRelease
 
       - name: Create Release and Upload APK
         uses: softprops/action-gh-release@v2
